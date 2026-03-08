@@ -1,29 +1,38 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import LoginPage from "./pages/LoginPage";
-import DashboardLayout from "./components/dashboard/DashboardLayout";
-import DialerPage from "./pages/dashboard/DialerPage";
-import MessagesPage from "./pages/dashboard/MessagesPage";
-import CallLogsPage from "./pages/dashboard/CallLogsPage";
-import ContactsPage from "./pages/dashboard/ContactsPage";
-import NumbersPage from "./pages/dashboard/NumbersPage";
-import BillingPage from "./pages/dashboard/BillingPage";
-import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
-import IntegrationsPage from "./pages/dashboard/IntegrationsPage";
-import SettingsPage from "./pages/dashboard/SettingsPage";
 import { AuthProvider } from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 import { ThemeProvider } from "./components/ThemeProvider";
+
+// Lazy-loaded pages
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const DashboardLayout = lazy(() => import("./components/dashboard/DashboardLayout"));
+const DialerPage = lazy(() => import("./pages/dashboard/DialerPage"));
+const MessagesPage = lazy(() => import("./pages/dashboard/MessagesPage"));
+const CallLogsPage = lazy(() => import("./pages/dashboard/CallLogsPage"));
+const ContactsPage = lazy(() => import("./pages/dashboard/ContactsPage"));
+const NumbersPage = lazy(() => import("./pages/dashboard/NumbersPage"));
+const BillingPage = lazy(() => import("./pages/dashboard/BillingPage"));
+const AnalyticsPage = lazy(() => import("./pages/dashboard/AnalyticsPage"));
+const IntegrationsPage = lazy(() => import("./pages/dashboard/IntegrationsPage"));
+const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage"));
 
 const queryClient = new QueryClient();
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "your_google_client_id_here";
+
+// Loading Fallback Component
+const PageLoader = () => (
+  <div className="flex h-screen w-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+  </div>
+);
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" storageKey="vite-ui-theme">
@@ -47,24 +56,26 @@ const App = () => (
                   v7_relativeSplatPath: true,
                 }}
               >
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/dashboard" element={<DashboardLayout />}>
-                      <Route index element={<DialerPage />} />
-                      <Route path="messages" element={<MessagesPage />} />
-                      <Route path="calls" element={<CallLogsPage />} />
-                      <Route path="contacts" element={<ContactsPage />} />
-                      <Route path="numbers" element={<NumbersPage />} />
-                      <Route path="billing" element={<BillingPage />} />
-                      <Route path="analytics" element={<AnalyticsPage />} />
-                      <Route path="integrations" element={<IntegrationsPage />} />
-                      <Route path="settings" element={<SettingsPage />} />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/dashboard" element={<DashboardLayout />}>
+                        <Route index element={<DialerPage />} />
+                        <Route path="messages" element={<MessagesPage />} />
+                        <Route path="calls" element={<CallLogsPage />} />
+                        <Route path="contacts" element={<ContactsPage />} />
+                        <Route path="numbers" element={<NumbersPage />} />
+                        <Route path="billing" element={<BillingPage />} />
+                        <Route path="analytics" element={<AnalyticsPage />} />
+                        <Route path="integrations" element={<IntegrationsPage />} />
+                        <Route path="settings" element={<SettingsPage />} />
+                      </Route>
                     </Route>
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </BrowserRouter>
             </AuthProvider>
           </GoogleOAuthProvider>
