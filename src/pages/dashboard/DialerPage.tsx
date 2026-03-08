@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/dashboard/DashboardPageKit";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Device } from "@twilio/voice-sdk";
+import { Device, Call } from "@twilio/voice-sdk";
 import { API_BASE_URL, getStoredAuthToken } from "@/lib/billingApi";
 
 const dialPad = [
@@ -29,7 +29,7 @@ const DialerPage = () => {
   const [callSeconds, setCallSeconds] = useState(0);
   const { toast } = useToast();
   const deviceRef = useRef<Device | null>(null);
-  const callRef = useRef<any>(null);
+  const callRef = useRef<Call | null>(null);
 
   const { data: recentCalls = [], isLoading, refetch } = useQuery({
     queryKey: ['recent-calls'],
@@ -69,7 +69,7 @@ const DialerPage = () => {
         });
 
         device.on('registered', () => console.log('Twilio Device Registered'));
-        device.on('error', (error) => {
+        device.on('error', (error: { code: string; message: string; details?: unknown }) => {
           console.error('Twilio Device Error:', error);
           console.error('Twilio Error Code:', error.code);
           console.error('Twilio Error Message:', error.message);
@@ -151,8 +151,9 @@ const DialerPage = () => {
         title: "Calling...",
         description: `Connecting to ${number}`,
       });
-    } catch (err: any) {
-      toast({ title: "Call Failed", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const error = err as Error;
+      toast({ title: "Call Failed", description: error.message, variant: "destructive" });
     }
   }, [number, deviceRef, toast, refetch]);
 

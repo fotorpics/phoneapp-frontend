@@ -17,7 +17,7 @@ import BillingPage from "./pages/dashboard/BillingPage";
 import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
 import IntegrationsPage from "./pages/dashboard/IntegrationsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import { ThemeProvider } from "./components/ThemeProvider";

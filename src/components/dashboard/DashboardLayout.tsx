@@ -36,6 +36,14 @@ const navItems = [
   { icon: Settings, label: "Settings", path: "/dashboard/settings" },
 ];
 
+interface SearchResult {
+  label: string;
+  path: string;
+  icon: React.ElementType;
+  type: string;
+  sublabel?: string;
+}
+
 const DashboardLayout = () => {
   const { user, logout, token } = useAuth();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem("callflow:sidebarCollapsed") === "true");
@@ -75,7 +83,7 @@ const DashboardLayout = () => {
   const debouncedTopSearch = useDebouncedValue(topSearch, 300);
   const browserNotificationsRef = useRef(browserNotificationsEnabled);
 
-  const { data: contactsData = [] } = useQuery({
+  const { data: contactsData = [] } = useQuery<{ id: string; name: string; phone: string }[]>({
     queryKey: ["contacts-search"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/contacts`, {
@@ -86,7 +94,7 @@ const DashboardLayout = () => {
     enabled: !!token && debouncedTopSearch.trim().length > 0,
   });
 
-  const { data: callsData = [] } = useQuery({
+  const { data: callsData = [] } = useQuery<{ id: string; toPhoneNumber: string; createdAt: string }[]>({
     queryKey: ["calls-search"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/voice/logs`, {
@@ -101,7 +109,7 @@ const DashboardLayout = () => {
     const q = debouncedTopSearch.trim().toLowerCase();
     if (!q) return [];
 
-    const matches: Array<{ label: string; path: string; icon: any; type: string; sublabel?: string }> = [];
+    const matches: SearchResult[] = [];
 
     // 1. Pages
     navItems.forEach(item => {
@@ -111,14 +119,14 @@ const DashboardLayout = () => {
     });
 
     // 2. Contacts
-    contactsData.slice(0, 5).forEach((c: any) => {
+    contactsData.slice(0, 5).forEach((c) => {
       if (c.name.toLowerCase().includes(q) || c.phone.includes(q)) {
         matches.push({ label: c.name, sublabel: c.phone, path: '/dashboard/contacts', icon: Users, type: 'Contact' });
       }
     });
 
     // 3. Calls
-    callsData.slice(0, 5).forEach((call: any) => {
+    callsData.slice(0, 5).forEach((call) => {
       if (call.toPhoneNumber.includes(q)) {
         matches.push({ label: `Call to ${call.toPhoneNumber}`, sublabel: new Date(call.createdAt).toLocaleDateString(), path: '/dashboard/calls', icon: Phone, type: 'Call Log' });
       }
